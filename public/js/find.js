@@ -13,10 +13,13 @@ function draw() {
   $("#cnt").textContent = `${data.length} TODA terminal${data.length === 1 ? "" : "s"} found`;
   $("#list").innerHTML = data.map(t => `<div class="item ${sel === t.id ? "on" : ""}" data-id="${t.id}"><h4>${t.name}<span class="tag ${t.is_active ? "" : "c"}">${t.is_active ? "Active" : "Closed"}</span></h4>
     <div class="sm">Serves ${t.serves}</div><div class="sm" style="margin-top:6px">📍 ${t.km_from_you} km from ${me ? "you" : "center"} · 📞 ${t.phone} · ${t.units} units</div>
-    ${t.fare_to_dest ? `<div style="margin-top:8px;color:var(--t);font-weight:700">To destination: ${t.km_to_dest} km · ${peso(t.fare_to_dest)}</div>` : ""}</div>`).join("") || '<div class="sm">No TODA matches that search.</div>';
+    ${t.fare_to_dest ? `<div style="margin-top:8px;color:var(--t);font-weight:700">To destination: ${t.km_to_dest} km · ${peso(t.fare_to_dest)}</div>` : ""}
+    <button class="btn nav-btn" data-lat="${t.lat}" data-lng="${t.lng}" data-name="${t.name}" title="Open in GPS/maps">Navigate</button>
+  </div>`).join("") || '<div class="sm">No TODA matches that search.</div>';
   markers.forEach(m => m.remove());
-  markers = data.map((t, i) => L.marker([t.lat, t.lng], { icon: pin(i + 1) }).addTo(map).bindPopup(`<b>${t.name}</b><br>${t.serves}<br>${t.phone}`).on("click", () => pick(t.id)));
+  markers = data.map((t, i) => L.marker([t.lat, t.lng], { icon: pin(i + 1) }).addTo(map).bindPopup(`<b>${t.name}</b><br>${t.serves}<br>${t.phone}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}&destination_alias=${encodeURIComponent(t.name)}" target="_blank" style="color:var(--t);font-weight:700">Open in GPS →</a>`).on("click", () => pick(t.id)));
   document.querySelectorAll(".item").forEach(el => el.onclick = () => pick(+el.dataset.id, true));
+  document.querySelectorAll(".nav-btn").forEach(btn => btn.onclick = e => { e.stopPropagation(); navigateTo(btn.dataset.lat, btn.dataset.lng, btn.dataset.name); });
   route();
 }
 async function route() {
@@ -51,4 +54,10 @@ document.querySelectorAll("[data-f]").forEach(c => c.onclick = () => {
   if (filter === "near" && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => { me = [p.coords.latitude, p.coords.longitude]; map.setView(me, 15); L.marker(me, { icon: L.divIcon({ className: "", html: '<div class="me"></div>', iconSize: [16, 16] }) }).addTo(map); load(); }, () => load());
   else load();
 });
+load();
+function navigateTo(lat, lng, name) {
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_alias=${encodeURIComponent(name)}`;
+  window.open(url, "_blank");
+}
+
 load();
