@@ -19,3 +19,16 @@ async function geocode(q) {
   } catch (e) {}
 }
 const api = (path, opt) => fetch(TODA.api + path, { headers: { Accept: "application/json", "Content-Type": "application/json", "X-CSRF-TOKEN": TODA.csrf }, ...opt }).then(r => r.json());
+
+// Toggleable sections. Remembers open/closed state in localStorage per key.
+function toggleInit(key, btnSel, sectionSel) {
+  const btn = $(btnSel), sec = $(sectionSel);
+  if (!btn || !sec) return;
+  const open = localStorage.getItem(key) !== 'closed';
+  if (!open) { sec.classList.add('collapsed'); btn.classList.add('collapsed'); }
+  btn.onclick = () => {
+    const now = sec.classList.toggle('collapsed');
+    btn.classList.toggle('collapsed');
+    localStorage.setItem(key, now ? 'closed' : 'open');
+  };
+}

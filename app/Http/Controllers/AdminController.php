@@ -37,6 +37,16 @@ class AdminController extends Controller
             ]);
         }
 
+        if (! auth()->user()->is_admin) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => 'Admin access required. Your account is not authorized to access the admin panel.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.map'));

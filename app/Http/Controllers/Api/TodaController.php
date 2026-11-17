@@ -17,7 +17,7 @@ class TodaController extends Controller
             $hits = (clone $q)->where(fn ($w) => $w->where('name', 'like', $term)->orWhere('serves', 'like', $term));
             if ($hits->exists()) $q = $hits;
         }
-        $from = [(float) $r->input('lat', 12.957), (float) $r->input('lng', 123.878)];
+        $from = [(float) $r->input('lat', 14.0683), (float) $r->input('lng', 121.3256)];
         $dest = $r->filled('dest_lat') ? [(float) $r->dest_lat, (float) $r->dest_lng] : null;
 
         $rows = $q->get()->map(function ($t) use ($fare, $from, $dest) {

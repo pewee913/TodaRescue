@@ -8,7 +8,8 @@ class TodaSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([
+        Place::truncate();
+        foreach ( [
             ['San Rafael', 14.0700, 121.3230], ['San Francisco', 14.0710, 121.3260],
             ['San Gabriel', 14.0650, 121.3220], ['San Jose', 14.0690, 121.3190],
             ['San Lucas', 14.0630, 121.3280], ['Santa Maria', 14.0660, 121.3210],

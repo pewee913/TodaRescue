@@ -1,15 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'Admin Login')
 @section('content')
-<section class="page">
-    <div class="top">
-        <div>
-            <h2>TODA Rescue Admin</h2>
-            <p>Sign in to manage TODA terminal pinpoints on the map.</p>
-        </div>
-    </div>
+<section class="page admin-login-page">
+    <div class="admin-login-card">
+        <h2>TODA Rescue Admin</h2>
+        <p>Sign in to manage TODA terminal pinpoints on the map.</p>
 
-    <div class="card" style="max-width:420px;margin:0 auto;">
         @if (session('error'))
             <div class="alert alert-error">{{ session('error') }}</div>
         @endif

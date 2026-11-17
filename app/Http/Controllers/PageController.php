@@ -8,7 +8,6 @@ use App\Models\CityBarangay;
 class PageController extends Controller
 {
     public function home()       { return view('home', ['places' => Place::orderBy('name')->get()]); }
-    public function calculator() { return view('calculator', ['places' => Place::orderBy('name')->get()]); }
     public function find()       { return view('find', ['places' => Place::orderBy('name')->get()]); }
 
     public function tables()

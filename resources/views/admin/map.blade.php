@@ -1,17 +1,20 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title', 'Admin - TODA Map')
 @section('content')
 <section class="page admin-map">
-    <div class="top">
-        <div>
-            <h2>Manage TODA Pinpoints</h2>
-            <p>Click the map to place a new TODA terminal, or click a marker to edit/move it. Changes are saved to the database and show up on the user side immediately.</p>
+    <div class="admin-map-toolbar">
+        <h2 class="admin-title">Manage TODA Pinpoints</h2>
+        <p class="admin-subtitle">Click the map to place a new TODA terminal, or click a marker to edit/move it. Changes save to the database and show up on the user side immediately.</p>
+        <div class="admin-toolbar-actions">
+            <a href="{{ route('admin.logout') }}" class="admin-logout-btn" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4"/><polyline points="9 12 11 14 15 10"/></svg>
+                Logout
+            </a>
+            <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display:none">@csrf @method('POST')</form>
         </div>
-        <a href="{{ route('admin.logout') }}" class="btn s" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-        <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display:none">@csrf @method('POST')</form>
     </div>
 
-    <div class="two admin-layout">
+    <div class="admin-map-layout">
         <div class="admin-sidebar">
             <div class="admin-form-card">
                 <h3 id="form-title">Add New TODA</h3>
