@@ -1,15 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Fare Tables')
 @section('content')
-    <section class="page">
-        <div class="top">
+    <section class="page tables-page">
+        <div class="top tables-top">
             <div>
                 <h2>Fare Tables</h2>
-                <p>Browse official San Pablo City tricycle fares (City Ordinance 72, series of 2026), including discounted
-                    rates.</p>
-            </div>
-            <div class="top-actions">
-                <button class="toggle-btn" id="toggle-table" aria-label="Toggle route table"><svg class="t-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg></button>
+                <p class="tables-subtitle">Official San Pablo City tricycle rates (Ordinance 72)</p>
             </div>
         </div>
 
@@ -20,9 +16,9 @@
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
                 </svg>
-                <input type="search" id="tq" placeholder="Filter routes by barangay or landmark..." autocomplete="off">
+                <input type="search" id="tq" placeholder="Filter by barangay or route..." autocomplete="off">
             </div>
-            <span class="sm route-count">{{ count($rows) }} routes listed</span>
+            <span class="sm route-count">{{ count($rows) }} routes</span>
         </div>
 
         <div class="collapse-section" id="route-table">
@@ -54,6 +50,10 @@
                         @endforeach
                     </tbody>
                 </table>
+                <div id="no-routes" class="card" style="display:none;padding:24px;text-align:center;color:var(--mu);margin-top:10px;">
+                    <p style="margin:0 0 8px;font-size:15px;font-weight:600">No routes found matching your search</p>
+                    <button class="btn s outline" type="button" onclick="document.getElementById('tq').value='';document.getElementById('tq').dispatchEvent(new Event('input'));">Clear Search Filter</button>
+                </div>
             </div>
         </div>
 
@@ -67,7 +67,7 @@
 
     <script>
         document.getElementById('tq').oninput = function(e) {
-            const q = e.target.value.toLowerCase();
+            const q = e.target.value.toLowerCase().trim();
             let visible = 0;
             document.querySelectorAll('#tb tr').forEach(r => {
                 const match = r.textContent.toLowerCase().includes(q);
@@ -78,9 +78,14 @@
             if (counter) {
                 counter.textContent = `${visible} route${visible === 1 ? '' : 's'} found`;
             }
+            const noRoutes = document.getElementById('no-routes');
+            if (noRoutes) {
+                noRoutes.style.display = visible === 0 ? 'block' : 'none';
+            }
         };
         (function(){
             const btn = document.getElementById('toggle-table'), sec = document.getElementById('route-table');
+            if (!btn || !sec) return;
             const open = localStorage.getItem('route-table') !== 'closed';
             if (!open){ sec.classList.add('collapsed'); btn.classList.add('collapsed'); }
             btn.onclick = function(){

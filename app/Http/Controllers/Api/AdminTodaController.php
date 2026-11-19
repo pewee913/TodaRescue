@@ -26,12 +26,16 @@ class AdminTodaController extends Controller
             'lat' => 'required|numeric|between:-90,90',
             'lng' => 'required|numeric|between:-180,180',
             'serves' => 'required|string|max:255',
+            'barangays_passed' => 'nullable|string|max:500',
+            'landmarks' => 'nullable|string|max:500',
+            'route_waypoints' => 'nullable|array',
             'phone' => 'nullable|string|max:50',
             'units' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 
         $toda = Toda::create(array_merge($validated, [
+            'phone' => (string) ($validated['phone'] ?? ''),
             'units' => (int) ($validated['units'] ?? 0),
             'is_active' => (bool) ($validated['is_active'] ?? true),
         ]));
@@ -49,6 +53,9 @@ class AdminTodaController extends Controller
             'lat' => 'sometimes|required|numeric|between:-90,90',
             'lng' => 'sometimes|required|numeric|between:-180,180',
             'serves' => 'sometimes|required|string|max:255',
+            'barangays_passed' => 'nullable|string|max:500',
+            'landmarks' => 'nullable|string|max:500',
+            'route_waypoints' => 'nullable|array',
             'phone' => 'nullable|string|max:50',
             'units' => 'nullable|integer|min:0',
             'is_active' => 'sometimes|boolean',

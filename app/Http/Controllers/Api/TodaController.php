@@ -11,11 +11,20 @@ class TodaController extends Controller
     public function index(Request $r, FareService $fare)
     {
         $q = Toda::query();
-        if ($r->boolean('open')) $q->where('is_active', true);
+        if ($r->boolean('open')) {
+            $q->where('is_active', true);
+        }
         if ($r->filled('q')) {
             $term = '%' . $r->q . '%';
-            $hits = (clone $q)->where(fn ($w) => $w->where('name', 'like', $term)->orWhere('serves', 'like', $term));
-            if ($hits->exists()) $q = $hits;
+            $hits = (clone $q)->where(function ($w) use ($term) {
+                $w->where('name', 'like', $term)
+                  ->orWhere('serves', 'like', $term)
+                  ->orWhere('barangays_passed', 'like', $term)
+                  ->orWhere('landmarks', 'like', $term);
+            });
+            if ($hits->exists()) {
+                $q = $hits;
+            }
         }
         $from = [(float) $r->input('lat', 14.0683), (float) $r->input('lng', 121.3256)];
         $dest = $r->filled('dest_lat') ? [(float) $r->dest_lat, (float) $r->dest_lng] : null;

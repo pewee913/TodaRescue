@@ -1,5 +1,6 @@
 const $ = s => document.querySelector(s);
 const peso = x => "₱" + Number(x).toFixed(2);
+const escapeHtml = t => String(t || "").replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tile = m => L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(m);
 const pin = (n, c = "") => L.divIcon({ className: "", html: `<div class="pin ${c}">${n}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] });
 const hav = (a, b) => { const r = Math.PI / 180, x = Math.sin((b[0] - a[0]) * r / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin((b[1] - a[1]) * r / 2) ** 2; return 12742 * Math.asin(Math.sqrt(x)) * 1.3; };

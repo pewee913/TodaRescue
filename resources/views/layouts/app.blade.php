@@ -87,23 +87,8 @@
         @yield('content')
     </main>
 
-    <!-- Mobile Bottom Navigation Bar (1-Thumb Access) -->
-    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-        <a href="{{ route('home') }}" @class(['m-nav-item', 'active' => request()->routeIs('home')])>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>Home</span>
-        </a>
-        <a href="{{ route('find') }}" @class(['m-nav-item', 'active' => request()->routeIs('find')])>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>Find TODA</span>
-        </a>
-        <a href="{{ route('tables') }}" @class(['m-nav-item', 'active' => request()->routeIs('tables')])>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
-            <span>Fare Tables</span>
-        </a>
-    </nav>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="{{ asset('js/leaflet.polylineDecorator.js') }}"></script>
     <script>
         window.TODA = {
             csrf: "{{ csrf_token() }}",
