@@ -3267,3 +3267,364 @@ td.s-rate {
         scroll-behavior: auto !important;
     }
 }
+
+/* ==========================================================================
+   Destination Search & Live Autocomplete Suggestions
+   ========================================================================== */
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.search-input-wrap input {
+    width: 100%;
+}
+
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1.5px solid var(--bd);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+    z-index: 1050;
+    max-height: 290px;
+    overflow-y: auto;
+}
+
+.search-suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--bd-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: background 0.15s ease;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background: #f0fdf4;
+}
+
+.search-sug-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.search-sug-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: var(--mu);
+}
+
+.search-sug-toda {
+    font-size: 11.5px;
+    color: #15803d;
+    font-weight: 600;
+    margin-top: 1px;
+}
+
+.search-match-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    padding: 11px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(22, 163, 74, 0.1);
+}
+
+/* ==========================================================================
+   TODA Options Switcher (inside nav-card) & Matching TODAs List
+   ========================================================================== */
+
+/* In-Card Options Switcher */
+.toda-switcher-wrap {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #fff8f3;
+    border: 1px solid #fed7aa;
+    border-radius: var(--radius-sm);
+}
+
+.toda-switcher-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #9a3412;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+
+.toda-switcher-count {
+    background: #ea580c;
+    color: #ffffff;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+}
+
+.toda-options-switcher {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.toda-options-switcher::-webkit-scrollbar {
+    height: 4px;
+}
+.toda-options-switcher::-webkit-scrollbar-thumb {
+    background: #fdba74;
+    border-radius: 4px;
+}
+
+.toda-option-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1.5px solid #fed7aa;
+    border-radius: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+    text-align: left;
+    flex-shrink: 0;
+}
+
+.toda-option-pill:hover {
+    border-color: var(--primary);
+    background: #fff4ed;
+    transform: translateY(-1px);
+}
+
+.toda-option-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(255, 95, 21, 0.35);
+}
+
+.toda-option-pill .pill-num {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffedd5;
+    color: #c2410c;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.toda-option-pill.active .pill-num {
+    background: #ffffff;
+    color: var(--primary);
+}
+
+.toda-option-pill .pill-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.toda-option-pill.active .pill-name {
+    color: #ffffff;
+}
+
+.toda-option-pill .pill-dist {
+    font-size: 10.5px;
+    color: var(--mu);
+    margin-top: 1px;
+}
+
+.toda-option-pill.active .pill-dist {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Matching TODAs Section Card */
+.matching-todas-card {
+    margin-bottom: 14px;
+    border: 1.5px solid #fed7aa;
+    background: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.matching-todas-header {
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--bd-light);
+    padding-bottom: 10px;
+}
+
+.matching-todas-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.matching-count-badge {
+    background: #ffedd5;
+    color: #c2410c;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 2px 9px;
+    border-radius: var(--radius-full);
+    border: 1px solid #fed7aa;
+}
+
+.matching-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.matching-option-card {
+    background: #ffffff;
+    border: 1.5px solid var(--bd);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.matching-option-card:hover {
+    border-color: var(--primary);
+    background: #fffcf9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.matching-option-card.selected {
+    border-color: var(--primary);
+    background: #fff8f3;
+    box-shadow: 0 0 0 1.5px var(--primary), var(--shadow-sm);
+}
+
+.matching-option-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.matching-option-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.matching-option-num {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.matching-option-card.selected .matching-option-num {
+    background: #c2410c;
+}
+
+.matching-option-meta {
+    font-size: 12px;
+    color: var(--mu);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.matching-option-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.matching-option-route {
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    line-height: 1.4;
+}
+
+.matching-option-btn-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.matching-option-btn {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+}
+
+.matching-option-btn.active {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.matching-option-btn.select {
+    background: var(--gradient);
+    color: #ffffff;
+}
+
+/* Sidebar List Card */
+.toda-list-card {
+    margin-top: 14px;
+    background: #ffffff;
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.toda-sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 2px;
+}

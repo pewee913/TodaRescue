@@ -23,6 +23,8 @@ let data = [];
 let activeFilter = "all";
 let isNavigating = false;
 let selectedToda = null;
+let activeDestinationQuery = "";
+let allTodas = [];
 
 // ==========================================================================
 // COMPASS & DIRECTION CALCULATIONS
@@ -348,6 +350,11 @@ async function load() {
 
   try {
     data = await api("/todas?" + p);
+    if (!$("#q")?.value && !dest && activeFilter === "all" && data.length) {
+      allTodas = data;
+    } else if (allTodas.length === 0 && data.length) {
+      allTodas = data;
+    }
   } catch (err) {
     console.error("Failed to load TODAs:", err);
     data = [];
@@ -408,6 +415,12 @@ function draw() {
             </div>
           ` : ""}
 
+          ${activeDestinationQuery ? `
+            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:700;">
+              <span>✓ Passes through ${escapeHtml(activeDestinationQuery)}</span>
+            </div>
+          ` : ""}
+
           ${t.fare_to_dest ? `<div style="margin-top:8px;color:var(--t);font-weight:700">Fare to dest: ${formatDist(t.km_to_dest)} · ${peso(t.fare_to_dest)}</div>` : ""}
 
           <div style="margin-top:10px;display:flex;justify-content:flex-end">
@@ -457,14 +470,129 @@ function draw() {
         ` : ""}
 
         <div style="margin-top:10px">
-          <button class="btn s btn-full" onclick="pick(${t.id}, true)">View Terminal Details</button>
+          <button class="btn s btn-full ${isSelected ? '' : 'outline'}" onclick="pick(${t.id}, true)">
+            ${isSelected ? 'Selected Terminal ✓' : `Select Option #${i + 1}`}
+          </button>
         </div>
       </div>
     `);
 
+    m._todaId = t.id;
     m.on("click", () => pick(t.id));
     return m;
   });
+
+  renderOptionsUI();
+}
+
+// Renders the In-Card Switcher Pills and the Matching TODAs Options Section
+function renderOptionsUI() {
+  const switcherWrap = $("#toda-switcher-wrap");
+  const switcherEl = $("#toda-options-switcher");
+  const switcherCount = $("#toda-switcher-count");
+  const matchingSection = $("#matching-todas-section");
+  const matchingTitle = $("#matching-todas-title");
+  const matchingCount = $("#matching-count-badge");
+  const matchingSub = $("#matching-todas-sub");
+  const matchingList = $("#matching-options-list");
+
+  // In-Card Switcher Pills (inside #nav-card)
+  if (switcherWrap && switcherEl) {
+    if (data.length > 1) {
+      switcherWrap.style.display = "block";
+      if (switcherCount) switcherCount.textContent = `${data.length} options`;
+
+      switcherEl.innerHTML = data.map((t, idx) => {
+        const isSel = sel === t.id;
+        const distStr = t.km_from_you !== undefined ? `🚶 ${formatDist(t.km_from_you)}` : 'Terminal';
+        return `
+          <button type="button" class="toda-option-pill ${isSel ? 'active' : ''}" data-id="${t.id}" title="Switch to ${escapeHtml(t.name)}">
+            <span class="pill-num">${idx + 1}</span>
+            <div>
+              <div class="pill-name">${escapeHtml(t.name)}${isSel ? ' ✓' : ''}</div>
+              <div class="pill-dist">${distStr}</div>
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      switcherEl.querySelectorAll(".toda-option-pill").forEach(btn => {
+        btn.onclick = () => {
+          const id = +btn.dataset.id;
+          if (id !== sel) pick(id, true);
+        };
+      });
+    } else {
+      switcherWrap.style.display = "none";
+    }
+  }
+
+  // Matching Options Section Card (in sidebar)
+  if (matchingSection && matchingList) {
+    const shouldShow = data.length > 1 && (activeDestinationQuery || sel !== null);
+    if (shouldShow) {
+      matchingSection.style.display = "block";
+      if (matchingTitle) {
+        matchingTitle.textContent = activeDestinationQuery
+          ? `TODAs Passing Through “${activeDestinationQuery}”`
+          : `Available TODA Options`;
+      }
+      if (matchingCount) {
+        matchingCount.textContent = `${data.length} Options`;
+      }
+      if (matchingSub) {
+        matchingSub.textContent = activeDestinationQuery
+          ? `Found ${data.length} TODAs passing through this area. Tap an option below to view its route:`
+          : `Choose a terminal option below to see live walking directions and route:`;
+      }
+
+      matchingList.innerHTML = data.map((t, idx) => {
+        const isSel = sel === t.id;
+        const brgys = parseRouteList(t.barangays_passed || t.serves);
+        const distStr = t.km_from_you !== undefined ? formatDist(t.km_from_you) : null;
+        const walkMins = t.km_from_you !== undefined ? Math.max(1, Math.round(t.km_from_you * 12)) : null;
+
+        return `
+          <div class="matching-option-card ${isSel ? 'selected' : ''}" data-id="${t.id}">
+            <div class="matching-option-top">
+              <div class="matching-option-title">
+                <span class="matching-option-num">${idx + 1}</span>
+                <span>${escapeHtml(t.name)}</span>
+              </div>
+              <span class="tag ${t.is_active ? '' : 'c'}">${t.is_active ? 'Active' : 'Closed'}</span>
+            </div>
+
+            <div class="matching-option-meta">
+              ${distStr ? `<span>🚶 <b>${distStr}</b> walk</span>` : ''}
+              ${walkMins ? `<span>⏱️ ~${walkMins} mins</span>` : ''}
+              ${t.fare_to_dest ? `<span>💵 Fare: <b>${peso(t.fare_to_dest)}</b></span>` : ''}
+            </div>
+
+            ${brgys.length ? `
+              <div class="matching-option-route">
+                <b>🏘️ Route passes:</b> ${escapeHtml(brgys.slice(0, 5).join(', '))}${brgys.length > 5 ? ` <span style="color:var(--mu)">(+${brgys.length - 5} more)</span>` : ''}
+              </div>
+            ` : ''}
+
+            <div class="matching-option-btn-row">
+              <button type="button" class="matching-option-btn ${isSel ? 'active' : 'select'}">
+                ${isSel ? 'Selected Option ✓' : 'Select This Option →'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      matchingList.querySelectorAll(".matching-option-card").forEach(card => {
+        card.onclick = () => {
+          const id = +card.dataset.id;
+          pick(id, true);
+        };
+      });
+    } else {
+      matchingSection.style.display = "none";
+    }
+  }
 }
 
 // Route Visualization State
@@ -860,6 +988,19 @@ function pick(id, pan = false) {
         <span class="tag ${t.is_active ? '' : 'c'}">${t.is_active ? 'Open now' : 'Closed'}</span>
       </div>
 
+      ${activeDestinationQuery ? `
+        <div class="search-match-banner">
+          <div style="font-size:24px;line-height:1;">🎯</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#15803d;letter-spacing:0.3px;">Destination Match</div>
+            <div style="font-size:13.5px;font-weight:800;color:var(--ink);">${escapeHtml(t.name)} passes through <u>${escapeHtml(activeDestinationQuery)}</u>!</div>
+            <div style="font-size:11.5px;color:var(--mu);">
+              ${data.length > 1 ? `Found <b>${data.length} candidate TODAs</b> for this area. Use the switcher above to switch between options.` : 'Sakyan ang TODA na ito para makapunta roon.'}
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
       ${pins.length ? `
         <div style="margin-top:8px;padding:9px 12px;background:#fff8f3;border-radius:var(--radius-sm);border:1px solid #fed7aa;display:flex;align-items:center;gap:8px;">
           <span style="font-size:16px">🛣️</span>
@@ -926,6 +1067,14 @@ function pick(id, pan = false) {
   if (selectedToda) {
     displayTodaRoute(selectedToda);
   }
+
+  // Pop up terminal pin on map
+  setTimeout(() => {
+    const activeMarker = markers.find(m => m._todaId === t.id);
+    if (activeMarker) {
+      activeMarker.openPopup();
+    }
+  }, 450);
 }
 
 // ==========================================================================
@@ -952,39 +1101,216 @@ if (dstSelect) {
   dstSelect.onchange = async () => {
     const o = dstSelect.selectedOptions[0];
     if (o.value) {
-      await setDest([+o.dataset.lat, +o.dataset.lng], o.text);
+      const placeName = o.text.trim();
+      if (searchInput) searchInput.value = placeName;
+      await setDest([+o.dataset.lat, +o.dataset.lng], placeName);
+      executeSearch(placeName);
     } else {
       dest = null;
+      activeDestinationQuery = "";
       hideNavCard();
       load();
     }
   };
 }
 
-// Search
+// Build suggestions list from loaded TODAs in database
+function getSuggestions(query) {
+  if (!query || query.length < 1) return [];
+  const q = query.toLowerCase().replace(/^(brgy\.?|barangay)\s*/i, '').trim();
+  const results = [];
+  const sourceList = allTodas.length ? allTodas : data;
+
+  sourceList.forEach(t => {
+    const brgys = parseRouteList(t.barangays_passed);
+    const landmarks = parseRouteList(t.landmarks);
+    const pins = getTodaRoutePins(t);
+
+    brgys.forEach(b => {
+      const clean = b.toLowerCase().replace(/^(brgy\.?|barangay)\s*/i, '').trim();
+      if (clean.includes(q)) {
+        const key = "b:" + clean;
+        const existing = results.find(r => r._key === key);
+        if (existing) {
+          existing.todaCount = (existing.todaCount || 1) + 1;
+        } else {
+          results.push({ _key: key, name: b, type: "Barangay", icon: "🏘️", todaName: t.name, todaId: t.id, todaCount: 1 });
+        }
+      }
+    });
+
+    landmarks.forEach(lm => {
+      const clean = lm.toLowerCase().trim();
+      if (clean.includes(q)) {
+        const key = "l:" + clean;
+        const existing = results.find(r => r._key === key);
+        if (existing) {
+          existing.todaCount = (existing.todaCount || 1) + 1;
+        } else {
+          results.push({ _key: key, name: lm, type: "Landmark", icon: "📍", todaName: t.name, todaId: t.id, todaCount: 1 });
+        }
+      }
+    });
+
+    pins.forEach(p => {
+      if (p.name) {
+        const clean = p.name.toLowerCase().replace(/^(brgy\.?|barangay)\s*/i, '').trim();
+        if (clean.includes(q)) {
+          const isB = /brgy|barangay/i.test(p.name);
+          const key = (isB ? "b:" : "p:") + clean;
+          const existing = results.find(r => r._key === key);
+          if (existing) {
+            existing.todaCount = (existing.todaCount || 1) + 1;
+          } else {
+            results.push({ _key: key, name: p.name, type: isB ? "Barangay" : "Landmark", icon: isB ? "🏘️" : "📍", todaName: t.name, todaId: t.id, todaCount: 1 });
+          }
+        }
+      }
+    });
+
+    if (t.serves) {
+      parseRouteList(t.serves).forEach(s => {
+        const clean = s.toLowerCase().replace(/^(brgy\.?|barangay)\s*/i, '').trim();
+        if (clean.includes(q)) {
+          const key = "s:" + clean;
+          const existing = results.find(r => r._key === key);
+          if (existing) {
+            existing.todaCount = (existing.todaCount || 1) + 1;
+          } else {
+            results.push({ _key: key, name: s, type: "Serves", icon: "🏁", todaName: t.name, todaId: t.id, todaCount: 1 });
+          }
+        }
+      });
+    }
+
+    if (t.name.toLowerCase().includes(q)) {
+      const key = "t:" + t.id;
+      if (!results.find(r => r._key === key)) {
+        results.push({ _key: key, name: t.name, type: "Terminal", icon: "🛺", todaName: t.name, todaId: t.id, todaCount: 1 });
+      }
+    }
+  });
+
+  return results.slice(0, 6);
+}
+
+function renderSuggestions(list) {
+  const container = $("#search-suggestions");
+  if (!container) return;
+  if (!list.length) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.innerHTML = list.map(item => `
+    <div class="search-suggestion-item" data-name="${escapeHtml(item.name)}" data-toda="${item.todaId}">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <span style="font-size:16px;">${item.icon}</span>
+        <div>
+          <div class="search-sug-name">${escapeHtml(item.name)}</div>
+          <div class="search-sug-toda">
+            Ride: <b>${escapeHtml(item.todaName)}</b>
+            ${item.todaCount > 1 ? `<span style="font-weight:600;color:var(--mu);font-size:11px;"> (+${item.todaCount - 1} more option${item.todaCount > 2 ? 's' : ''})</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <span class="search-sug-badge">${item.type}</span>
+    </div>
+  `).join("");
+
+  container.style.display = "block";
+
+  container.querySelectorAll(".search-suggestion-item").forEach(el => {
+    el.onclick = () => {
+      const destName = el.dataset.name;
+      const todaId = +el.dataset.toda;
+      $("#q").value = destName;
+      container.style.display = "none";
+      executeSearch(destName, todaId);
+    };
+  });
+}
+
+// Executes destination search and automatically pops up the matching TODA
+async function executeSearch(query, preferredTodaId = null) {
+  const q = (query || "").trim();
+  const sug = $("#search-suggestions");
+  if (sug) sug.style.display = "none";
+
+  if (!q) {
+    activeDestinationQuery = "";
+    await load();
+    return;
+  }
+
+  activeDestinationQuery = q;
+  await load();
+
+  if (data.length > 0) {
+    let target = preferredTodaId ? data.find(t => t.id === preferredTodaId) : null;
+    if (!target) target = data[0];
+
+    // Automatically pop up the matching TODA and its routes!
+    pick(target.id, true);
+
+    if (data.length > 1) {
+      showToast(`🎯 Found ${data.length} TODA options passing through “${q}”! You can switch between them anytime.`, "success");
+    } else {
+      showToast(`🎯 Found TODA passing through “${q}”: ${target.name}!`, "success");
+    }
+
+    // Automatically highlight the specific pin where the tricycle passes that area
+    setTimeout(() => {
+      window.focusRoutePin(q);
+    }, 700);
+  } else {
+    showToast(`No TODA found passing through “${q}”. Try searching another landmark or barangay.`, "info");
+  }
+}
+
+// Search Inputs & Autocomplete Binding
 const searchInput = $("#q");
 const searchBtn = $("#go");
-if (searchBtn && searchInput) {
-  searchBtn.onclick = async () => {
-    const q = searchInput.value.trim();
-    await load();
-    if (!q) return;
 
-    const hit = data.some(t => (t.name + t.serves).toLowerCase().includes(q.toLowerCase()));
-    if (hit) return;
-
-    showToast(`Searching map for “${q}”…`, "info");
-    const r = await geocode(q);
-    if (r) {
-      if (dstSelect) dstSelect.value = "";
-      await setDest([+r.lat, +r.lon], r.display_name.split(",")[0]);
-      map.flyTo([+r.lat, +r.lon], 16);
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    const text = searchInput.value.trim();
+    if (text.length >= 2) {
+      const sugs = getSuggestions(text);
+      renderSuggestions(sugs);
     } else {
-      showToast(`No place found for “${q}”.`, "info");
+      const sug = $("#search-suggestions");
+      if (sug) sug.style.display = "none";
     }
-  };
+  });
 
-  searchInput.onkeydown = (e) => e.key === "Enter" && searchBtn.click();
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      executeSearch(searchInput.value);
+    } else if (e.key === "Escape") {
+      const sug = $("#search-suggestions");
+      if (sug) sug.style.display = "none";
+    }
+  });
+
+  searchInput.addEventListener("search", () => {
+    if (!searchInput.value.trim()) {
+      executeSearch("");
+    }
+  });
+
+  // Close suggestions on click outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-input-wrap")) {
+      const sug = $("#search-suggestions");
+      if (sug) sug.style.display = "none";
+    }
+  });
+}
+
+if (searchBtn && searchInput) {
+  searchBtn.onclick = () => executeSearch(searchInput.value);
 }
 
 // Chips

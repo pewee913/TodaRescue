@@ -8,7 +8,10 @@
             <p class="find-subtitle">Locate terminals & live walking directions</p>
         </div>
         <div class="search-bar">
-            <input type="search" id="q" placeholder="Search barangay, landmark, or TODA..." autocomplete="off">
+            <div class="search-input-wrap">
+                <input type="search" id="q" placeholder="Where do you want to go? (e.g. San Gabriel, Santiago 2, Cemetery)..." autocomplete="off">
+                <div id="search-suggestions" class="search-suggestions" style="display:none;"></div>
+            </div>
             <button class="btn" id="go">Search</button>
         </div>
     </div>
@@ -38,11 +41,26 @@
                 <button class="btn s w" id="btn-detect-gps" type="button" style="padding:4px 10px;font-size:12px">Locate Me</button>
             </div>
 
+            <!-- Matching TODA Options Section: Shown when multiple TODAs match search or area -->
+            <div id="matching-todas-section" class="card matching-todas-card" style="display:none;">
+                <div class="matching-todas-header">
+                    <div class="matching-todas-title-row">
+                        <span style="font-size:18px">🛺</span>
+                        <b id="matching-todas-title" style="font-size:15px">Available TODA Options</b>
+                        <span id="matching-count-badge" class="matching-count-badge"></span>
+                    </div>
+                    <div class="sm" id="matching-todas-sub" style="color:var(--mu);margin-top:2px">
+                        Multiple TODAs pass through this area. Choose one below to switch:
+                    </div>
+                </div>
+                <div id="matching-options-list" class="matching-options-list"></div>
+            </div>
+
             <!-- Empty state: shown on desktop, hidden on mobile to prevent clutter -->
             <div id="empty-state" class="card empty-state desktop-only">
                 <div class="empty-icon">📍</div>
                 <h3 style="margin:0 0 4px;font-size:16px">Select a TODA</h3>
-                <p class="sm" style="margin:0">Tap any terminal pin on the map to see its directions and fare.</p>
+                <p class="sm" style="margin:0">Tap any terminal pin on the map or search an area to see its route and fare.</p>
             </div>
 
             <!-- TODA info card: shown only when a terminal is selected -->
@@ -53,6 +71,15 @@
                         <div class="sm" id="nav-subtitle">Live walking guidance to terminal</div>
                     </div>
                     <button class="nav-close" onclick="hideNavCard()" aria-label="Close info card">✕</button>
+                </div>
+
+                <!-- In-card TODA switcher pills: lets user quickly switch between other matching TODAs right inside the card -->
+                <div id="toda-switcher-wrap" class="toda-switcher-wrap" style="display:none;">
+                    <div class="toda-switcher-label">
+                        <span>🔄 Switch TODA Option:</span>
+                        <span id="toda-switcher-count" class="toda-switcher-count"></span>
+                    </div>
+                    <div id="toda-options-switcher" class="toda-options-switcher"></div>
                 </div>
 
                 <!-- Walking Direction Instruction Banner -->
@@ -92,6 +119,15 @@
 
                 <!-- Terminal Details & Barangay Cards -->
                 <div id="nav-toda-info" class="dest-info" style="margin-top:8px"></div>
+            </div>
+
+            <!-- Full TODA List / Browse Card -->
+            <div id="toda-list-card" class="card toda-list-card">
+                <div class="list-card-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <b style="font-size:14px;color:var(--ink)">All Terminals</b>
+                    <span id="cnt" class="sm" style="font-weight:600;color:var(--mu)"></span>
+                </div>
+                <div id="list" class="list toda-sidebar-list"></div>
             </div>
         </div>
     </div>

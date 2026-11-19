@@ -15,16 +15,26 @@ class TodaController extends Controller
             $q->where('is_active', true);
         }
         if ($r->filled('q')) {
-            $term = '%' . $r->q . '%';
-            $hits = (clone $q)->where(function ($w) use ($term) {
-                $w->where('name', 'like', $term)
-                  ->orWhere('serves', 'like', $term)
-                  ->orWhere('barangays_passed', 'like', $term)
-                  ->orWhere('landmarks', 'like', $term);
+            $rawTerm = trim($r->q);
+            $cleanTerm = trim(preg_replace('/^(brgy\.?|barangay)\s+/i', '', $rawTerm));
+            $term1 = '%' . $rawTerm . '%';
+            $term2 = '%' . $cleanTerm . '%';
+
+            $q->where(function ($w) use ($term1, $term2, $rawTerm, $cleanTerm) {
+                $w->where('name', 'like', $term1)
+                  ->orWhere('serves', 'like', $term1)
+                  ->orWhere('barangays_passed', 'like', $term1)
+                  ->orWhere('landmarks', 'like', $term1)
+                  ->orWhere('route_waypoints', 'like', $term1);
+
+                if ($cleanTerm !== '' && $cleanTerm !== $rawTerm) {
+                    $w->orWhere('name', 'like', $term2)
+                      ->orWhere('serves', 'like', $term2)
+                      ->orWhere('barangays_passed', 'like', $term2)
+                      ->orWhere('landmarks', 'like', $term2)
+                      ->orWhere('route_waypoints', 'like', $term2);
+                }
             });
-            if ($hits->exists()) {
-                $q = $hits;
-            }
         }
         $from = [(float) $r->input('lat', 14.0683), (float) $r->input('lng', 121.3256)];
         $dest = $r->filled('dest_lat') ? [(float) $r->dest_lat, (float) $r->dest_lng] : null;
